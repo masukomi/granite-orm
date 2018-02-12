@@ -4,11 +4,6 @@ module Granite::ORM::Fields
   alias Type = JSON::Type | DB::Any
   TIME_FORMAT_REGEX = /\d{4,}-\d{2,}-\d{2,}\s\d{2,}:\d{2,}:\d{2,}/
 
-  macro included
-    macro inherited
-      FIELDS = {} of Nil => Nil
-    end
-  end
 
   # specify the fields you want to define and types
   macro field(decl)
@@ -18,6 +13,10 @@ module Granite::ORM::Fields
   # include created_at and updated_at that will automatically be updated
   macro timestamps
     {% SETTINGS[:timestamps] = true %}
+  end
+
+  macro no_timestamps
+    {% SETTINGS[:timestamps] = false %}
   end
 
   macro __process_fields
