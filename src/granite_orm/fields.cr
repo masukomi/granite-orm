@@ -4,6 +4,11 @@ module Granite::ORM::Fields
   alias Type = JSON::Type | DB::Any
   TIME_FORMAT_REGEX = /\d{4,}-\d{2,}-\d{2,}\s\d{2,}:\d{2,}:\d{2,}/
 
+  macro included
+    macro inherited
+      FIELDS = {} of Nil => Nil
+    end
+  end
 
   # specify the fields you want to define and types
   macro field(decl)
