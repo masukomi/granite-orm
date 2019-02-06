@@ -15,8 +15,8 @@ module Granite::ORM::Querying
         \{% end %}
 
         \{% if SETTINGS[:timestamps] %}
-          model.created_at = result.read(Union(Time | Nil))
-          model.updated_at = result.read(Union(Time | Nil))
+          model.created_at = result.read(Union(String | Nil))
+          model.updated_at = result.read(Union(String | Nil))
         \{% end %}
         return model
       end
@@ -48,10 +48,6 @@ module Granite::ORM::Querying
   # First adds a `LIMIT 1` clause to the query and returns the first result
   def first(clause = "", params = [] of DB::Any)
     all([clause.strip, "LIMIT 1"].join(" "), params).first?
-  end
-
-  def last(clause = "", params = [] of DB::Any)
-    all([clause.strip, "ORDER BY #{@@order_column} DESC LIMIT 1"].join(" "), params).first?
   end
 
   # find returns the row with the primary key specified.
@@ -96,6 +92,49 @@ module Granite::ORM::Querying
     end
   end
 
+  def exec(clause = "")
+    @@adapter.open { |db| db.exec(clause) }
+  end
+
+  def query(clause = "", params = [] of DB::Any, &block)
+    @@adapter.open { |db| yield db.query(clause, params) }
+  end
+
+  def scalar(clause = "", &block)
+    @@adapter.open { |db| yield db.scalar(clause) }
+  end
+
+  def sanitize_string_for_sql(string : String) : String
+    string.gsub("'", "''")
+  end
+
+  def prep_array_for_sql(strings : Array(String)) : String
+    String.build do |str|
+      strings.each_with_index do |string, idx|
+        if idx > 0
+          str << ", "
+        end
+        str << "'"
+        str << sanitize_string_for_sql(string)
+        str << "'"
+      end
+    end
+  end
+  def prep_array_for_sql(ints : Array(Int64)) : String
+    String.build do |str|
+      ints.each_with_index do |int, idx|
+        if idx > 0
+          str << ", "
+        end
+        str << int
+      end
+    end
+  end
+
+  def last(clause = "", params = [] of DB::Any)
+    all([clause.strip, "ORDER BY #{@@order_column} DESC LIMIT 1"].join(" "), params).first?
+  end
+
   macro find_or_creatable(class_name, column_name)
     def self.find_or_create_with({{column_name.id}}s : Array(String)) : Array({{class_name.id}})
       sql_names = prep_array_for_sql(names)
@@ -121,48 +160,4 @@ module Granite::ORM::Querying
     end
   end
 
-  # count returns a count of all the records
-  def count : Int32
-    scalar "select count(*) from #{@@table_name}", &.to_s.to_i
-  end
-
-  def exec(clause = "")
-    @@adapter.open { |db| db.exec(clause) }
-  end
-
-  def query(clause = "", params = [] of DB::Any, &block)
-    @@adapter.open { |db| yield db.query(clause, params) }
-  end
-
-  def scalar(clause = "", &block)
-    @@adapter.open { |db| yield db.scalar(clause) }
-  end
-
-  def sanitize_string_for_sql(string : String) : String
-    string.gsub("'", "''")
-  end
-  
-  def prep_array_for_sql(strings : Array(String)) : String
-    String.build do |str|
-      strings.each_with_index do |string, idx|
-        if idx > 0
-          str << ", "
-        end
-        str << "'"
-        str << sanitize_string_for_sql(string)
-        str << "'"
-      end
-    end
-  end
-  
-  def prep_array_for_sql(ints : Array(Int64)) : String
-    String.build do |str|
-      ints.each_with_index do |int, idx|
-        if idx > 0
-          str << ", "
-        end
-        str << int
-      end
-    end
-  end
 end

@@ -28,7 +28,6 @@ module Granite::ORM::Table
   macro set_order_column(column)
     {% SETTINGS[:order_column] = column.id %}
   end
-
   # specify the primary key column and type
   macro primary(decl)
     {% PRIMARY[:name] = decl.var %}
@@ -60,4 +59,5 @@ module Granite::ORM::Table
       self.scalar("select count(*) from {{table_name}}"){|x| x}.as(Int64)
     end
   end
+  
 end

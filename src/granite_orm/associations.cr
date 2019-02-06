@@ -49,17 +49,36 @@ module Granite::ORM::Associations
       {{children_class}}.all(query, id)
     end
   end
-  
-  # define getter for related children
-  macro has_many(children_table, through)
-    def {{children_table.id}}
-      {% children_class = children_table.id[0...-1].camelcase %}
-      {% name_space = @type.name.gsub(/::/, "_").downcase.id %}
-      {% table_name = SETTINGS[:table_name] || name_space + "s" %}
-      return [] of {{children_class}} unless id
-      query = "JOIN {{through.id}} ON {{through.id}}.{{children_table.id[0...-1]}}_id = {{children_table.id}}.id "
-      query = query + "WHERE {{through.id}}.{{table_name[0...-1]}}_id = ?"
-      {{children_class}}.all(query, id)
+
+  macro has_some(children_class_name)
+    def {{children_class_name.id.underscore}}s
+      childrens_table = {{children_class_name}}.table_name
+      return [] of {{children_class_name}} unless id
+      table_fk_string = "#{childrens_table}.#{@@foreign_key}"
+      query = "WHERE #{table_fk_string} = ?"
+      {{children_class_name}}.all(query, id)
+    end
+    # from has_some({{children_class_name.id}})
+    def {{children_class_name.id.underscore}}s=(new_children :
+                                                Array({{children_class_name}}))
+      self.save unless self.id
+      # TODO: figure out how to wrap this in a transaction
+      # find existing relations
+      current_kids = {{children_class_name.id.underscore}}s
+      impending_orphans =  current_kids - new_children
+      new_kids = new_children - current_kids
+      # orphan ones who aren't in new list
+      impending_orphans.each do | kid |
+        kid.{{ SETTINGS[:foreign_key] }} = nil
+        kid.save
+      end
+
+      # add ones who are in new list
+      new_kids.each do | kid |
+        kid.{{ SETTINGS[:foreign_key] }} = self.id
+        kid.save
+      end
+      #END bit that should be in a transaction
     end
   end
 
@@ -126,6 +145,19 @@ module Granite::ORM::Associations
       end
       #END bit that should be in a transaction
 
+    end
+  end
+
+  # define getter for related children
+  macro has_many(children_table, through)
+    def {{children_table.id}}
+      {% children_class = children_table.id[0...-1].camelcase %}
+      {% name_space = @type.name.gsub(/::/, "_").downcase.id %}
+      {% table_name = SETTINGS[:table_name] || name_space + "s" %}
+      return [] of {{children_class}} unless id
+      query = "JOIN {{through.id}} ON {{through.id}}.{{children_table.id[0...-1]}}_id = {{children_table.id}}.id "
+      query = query + "WHERE {{through.id}}.{{table_name[0...-1]}}_id = ?"
+      {{children_class}}.all(query, id)
     end
   end
 end

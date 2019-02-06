@@ -1,7 +1,7 @@
 require "json"
 
 module Granite::ORM::Fields
-  alias Type = JSON::Type | DB::Any
+  alias Type = JSON::Any | DB::Any
   TIME_FORMAT_REGEX = /\d{4,}-\d{2,}-\d{2,}\s\d{2,}:\d{2,}:\d{2,}/
 
   macro included
@@ -17,21 +17,23 @@ module Granite::ORM::Fields
 
   # include created_at and updated_at that will automatically be updated
   macro timestamps
+    # macro timestamps
     {% SETTINGS[:timestamps] = true %}
   end
-
   macro no_timestamps
+    # macro no_timestamps
     {% SETTINGS[:timestamps] = false %}
   end
-
   macro __process_fields
     # Create the properties
     {% for name, type in FIELDS %}
       property {{name.id}} : Union({{type.id}} | Nil)
+      # -- {{name.id}}
     {% end %}
     {% if SETTINGS[:timestamps] %}
-      property created_at : Time?
-      property updated_at : Time?
+      # if SETTINGS[:timestamps]
+      property created_at : String?
+      property updated_at : String?
     {% end %}
 
     # keep a hash of the fields to be used for mapping
@@ -57,8 +59,8 @@ module Granite::ORM::Fields
         {% end %}
       {% end %}
       {% if SETTINGS[:timestamps] %}
-        parsed_params << created_at.not_nil!.to_s("%F %X")
-        parsed_params << updated_at.not_nil!.to_s("%F %X")
+        parsed_params << created_at.not_nil!
+        parsed_params << updated_at.not_nil!
       {% end %}
       return parsed_params
     end
@@ -78,8 +80,8 @@ module Granite::ORM::Fields
         {% end %}
       {% end %}
       {% if SETTINGS[:timestamps] %}
-        fields["created_at"] = created_at.try(&.to_s("%F %X"))
-        fields["updated_at"] = updated_at.try(&.to_s("%F %X"))
+        fields["created_at"] = created_at
+        fields["updated_at"] = updated_at
       {% end %}
 
       return fields
@@ -101,8 +103,8 @@ module Granite::ORM::Fields
         {% end %}
 
         {% if SETTINGS[:timestamps] %}
-          json.field "created_at", created_at.try(&.to_s("%F %X"))
-          json.field "updated_at", updated_at.try(&.to_s("%F %X"))
+          json.field "created_at", created_at
+          json.field "updated_at", updated_at
         {% end %}
       end
     end
@@ -119,35 +121,31 @@ module Granite::ORM::Fields
 
     # Casts params and sets fields
     private def cast_to_field(name, value : Type)
-      {% unless FIELDS.empty? %}
-        case name.to_s
-          {% for _name, type in FIELDS %}
-          when "{{_name.id}}"
-            return @{{_name.id}} = nil if value.nil?
-            {% if type.id == Int32.id %}
-              @{{_name.id}} = value.is_a?(String) ? value.to_i32(strict: false) : value.is_a?(Int64) ? value.to_i32 : value.as(Int32)
-            {% elsif type.id == Int64.id %}
-              @{{_name.id}} = value.is_a?(String) ? value.to_i64(strict: false) : value.as(Int64)
-            {% elsif type.id == Float32.id %}
-              @{{_name.id}} = value.is_a?(String) ? value.to_f32(strict: false) : value.is_a?(Float64) ? value.to_f32 : value.as(Float32)
-            {% elsif type.id == Float64.id %}
-              @{{_name.id}} = value.is_a?(String) ? value.to_f64(strict: false) : value.as(Float64)
-            {% elsif type.id == Bool.id %}
-              @{{_name.id}} = ["1", "yes", "true", true].includes?(value)
-            {% elsif type.id == Time.id %}
-              if value.is_a?(Time)
-                 @{{_name.id}} = value
-               elsif value.to_s =~ TIME_FORMAT_REGEX
-                 @{{_name.id}} = Time.parse(value.to_s, "%F %X")
-               end
-            {% else %}
-              @{{_name.id}} = value.to_s
-            {% end %}
+      case name.to_s
+        {% for _name, type in FIELDS %}
+        when "{{_name.id}}"
+          return @{{_name.id}} = nil if value.nil?
+          {% if type.id == Int32.id %}
+            @{{_name.id}} = value.is_a?(String) ? value.to_i32(strict: false) : value.is_a?(Int64) ? value.to_i32 : value.as(Int32)
+          {% elsif type.id == Int64.id %}
+            @{{_name.id}} = value.is_a?(String) ? value.to_i64(strict: false) : value.as(Int64)
+          {% elsif type.id == Float32.id %}
+            @{{_name.id}} = value.is_a?(String) ? value.to_f32(strict: false) : value.is_a?(Float64) ? value.to_f32 : value.as(Float32)
+          {% elsif type.id == Float64.id %}
+            @{{_name.id}} = value.is_a?(String) ? value.to_f64(strict: false) : value.as(Float64)
+          {% elsif type.id == Bool.id %}
+            @{{_name.id}} = ["1", "yes", "true", true].includes?(value)
+          {% elsif type.id == Time.id %}
+            if value.is_a?(Time)
+               @{{_name.id}} = value
+             elsif value.to_s =~ TIME_FORMAT_REGEX
+               @{{_name.id}} = Time.parse(value.to_s, "%F %X")
+             end
+          {% else %}
+            @{{_name.id}} = value.to_s
           {% end %}
-        end
-      {% end %}
-    rescue ex
-      errors << Granite::ORM::Error.new(name, ex.message)
+        {% end %}
+      end
     end
   end
 end
