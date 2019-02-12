@@ -137,14 +137,14 @@ module Granite::ORM::Querying
 
   macro find_or_creatable(class_name, column_name)
     def self.find_or_create_with({{column_name.id}}s : Array(String)) : Array({{class_name.id}})
-      sql_names = prep_array_for_sql(names)
-      all_supplied_query = "where name in (#{sql_names})"
+      sql_names = prep_array_for_sql({{column_name.id}}s)
+      all_supplied_query = "where {{column_name.id}} in (#{sql_names})"
       existing = {{class_name.id}}.all(all_supplied_query).index_by{|p|p.name}
       insertable = names - existing.keys
 
       if insertable.size > 0
         insert = String.build do |str|
-          str << "insert into #{@@table_name} (name) values "
+          str << "insert into #{@@table_name} ({{column_name.id}}) values "
           insertable.each_with_index do |name, idx |
             if idx > 0
               str << ", "
