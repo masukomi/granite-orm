@@ -1,11 +1,15 @@
-# Granite::ORM
+# Sandstone
 
-[Amber](https://github.com/Amber-Crystal/amber) is a web framework written in
-the [Crystal](https://github.com/manastech/crystal) language.
+A simple Object Relational Model (ORM) for Crystal based on a fork of Granite
+ORM. This fork includes specific changes for SQLite more flexible "has many through"
+relationships, custom column names for foreign keys and more. 
 
-This project is to provide an ORM in Crystal.
+This assumes familiarity with a Rails-style ORM. 
 
-[![Build Status](https://img.shields.io/travis/amberframework/granite-orm.svg?maxAge=360)](https://travis-ci.org/amberframework/granite-orm)
+It is a personal fork created to address limitations found in Granite. I'm happy
+to help with questions and feauters, but it is not even remotely recommended 
+for production use. I haven't even gotten around to replacing all the mentions
+of Granite.
 
 ## Installation
 
@@ -17,17 +21,10 @@ with kemal or any other framework as well.
 ```yaml
 dependencies:
   granite_orm:
-    github: amberframework/granite-orm
-
-  # Pick your database
-  mysql:
-    github: crystal-lang/crystal-mysql
+    github: masukomi/sandstone
 
   sqlite3:
     github: crystal-lang/crystal-sqlite3
-
-  pg:
-    github: will/crystal-pg
 
 ```
 
@@ -35,10 +32,6 @@ Next you will need to create a `config/database.yml`
 You can leverage environment variables using `${}` syntax.
 
 ```yaml
-mysql:
-  database: "mysql://username:password@hostname:3306/database_${AMBER_ENV}"
-pg:
-  database: "postgres://username:password@hostname:5432/database"
 sqlite:
   database: "sqlite3:./config/${DB_NAME}.db"
 ```
@@ -56,7 +49,8 @@ class Post < Granite::ORM::Base
   adapter mysql
   field name : String
   field body : String
-  timestamps
+  timestamps # will create and update the created_at and updated_at columns
+             # DOES NOT WORK WITH SQLITE (yet)
 end
 ```
 
@@ -67,26 +61,13 @@ require "granite_orm/adapter/sqlite"
 
 class Comment < Granite::ORM::Base
   adapter sqlite
+  no_timestamps  # you'll have to manage timestamp columns yourself currently
   table_name post_comments
   field name : String
   field body : String
 end
 ```
 
-### id, created_at, updated_at
-
-The primary key is automatically created for you and if you use `timestamps` they will be
-automatically updated for you.
-
-Here are the MySQL field definitions for id, created_at, updated_at
-
-```mysql
-  id BIGINT NOT NULL AUTO_INCREMENT
-  # Your fields go here
-  created_at TIMESTAMP
-  updated_at TIMESTAMP
-  PRIMARY KEY (id)
-```
 
 ### Custom Primary Key
 
@@ -101,6 +82,39 @@ class Site < Granite::ORM::Base
   field name : String
 end
 ```
+
+### Custom foreign key
+Specify what columns will be called that reference a foreign key for the current
+class
+
+```crystal
+class Event
+  ...
+  set_foreign_key event_id
+end
+```
+
+### Custom default ordering column
+Specify what column results will be ordered by by default.
+
+```crystal
+class event
+  ...
+  set_order_column created_at
+end
+```
+
+### Custom Table Name
+Specify the name of your table if it can't simply be pluralized by adding an s.
+This is leveraged by other code to support a more flexible table naming system.
+
+```crystal
+class Cactus
+  table_name cacti
+end
+
+```
+
 
 This will override the default primary key of `id : Int64`.
 
@@ -132,6 +146,12 @@ if post
 end
 ```
 
+#### Find Last 
+```crystal
+post = Post.last
+puts post.name if post
+```
+
 #### Find
 
 ```crystal
@@ -149,6 +169,26 @@ if post
   puts post.name
 end
 ```
+
+#### Find or Create
+A simplistic find or create. Useful if the object can be created with data in
+only one column (other than the `id` column).
+
+```crystal
+class Person
+  find_or_creatable Person, name
+
+end
+```
+
+Allows you to
+
+```
+Person.find_or_create_with(names_array)
+```
+
+Creates a bunch of people using the names in the array.
+
 
 #### Insert
 
@@ -230,6 +270,156 @@ post = Post.all("ORDER BY posts.name DESC LIMIT 1").first
 
 #### One to Many
 
+`owned_by` and `has_some` macros provide association handling between objects.
+
+
+```crystal
+class User < Granite::ORM::Base
+  adapter mysql
+
+  has_some Post
+
+  field email : String
+  field name : String
+  timestamps
+end
+```
+
+This will add a `posts` instance method to the user which returns an array of posts.
+
+```crystal
+class Post < Granite::ORM::Base
+  adapter mysql
+
+  owned_by User 
+  # optionally specify the foreign key column if it isn't just the lower case 
+  # class name followed by _id
+  # owned_by User, column: user_id
+
+  field title : String
+  timestamps
+end
+```
+
+You can also have some of X through Y. In this case a `User` has some `Posts`
+through the `UserPost` class. The `UserPost` class must, of course, also be
+managed by Sandstone.
+
+```
+class User
+  has_some Post, through: UserPost
+  ...
+end
+
+class UserPost
+  owned_by User, column: user_id
+  owned_by Post, column: post_id
+end
+
+class Post
+  has_some User, through: UserPost
+end
+```
+
+
+
+#### Many to Many
+
+Instead of using a hidden many-to-many table, Granite recommends always creating a model for your join tables.  For example, let's say you have many `users` that belong to many `rooms`. We recommend adding a new model called `participants` to represent the many-to-many relationship.
+
+Then you can use the `belongs_to` and `has_many` relationships going both ways.
+
+```crystal
+class User < Granite::ORM::Base
+  has_many :participants
+
+  field name : String
+end
+
+class Participant < Granite::ORM::Base
+  belongs_to :user
+  belongs_to :room
+end
+
+class Room < Granite::ORM::Base
+  has_many :participants
+
+  field name : String
+end
+```
+
+
+### Callbacks
+
+There is support for callbacks on certain events.
+
+Here is an example:
+
+```crystal
+require "granite_orm/adapter/pg"
+
+class Post < Granite::ORM
+  adapter pg
+
+  before_save :upcase_title
+
+  field title : String
+  field content : String
+  timestamps
+
+  def upcase_title
+    if title = @title
+      @title = title.upcase
+    end
+  end
+end
+```
+
+You can register callbacks for the following events:
+
+#### Create
+
+- before_save
+- before_create
+- **save**
+- after_create
+- after_save
+
+#### Update
+
+- before_save
+- before_update
+- **save**
+- after_update
+- after_save
+
+#### Destroy
+
+- before_destroy
+- **destroy**
+- after_destroy
+
+
+
+
+
+
+
+
+
+
+
+
+-------
+
+-------
+
+## DEPRECATED original Granite ORM functionality
+Warning: This code is still present in the codebase only because it hasn't
+been deleted yet. It probably still works.... probably.
+
+
+### One To Many
 `belongs_to` and `has_many` macros provide a rails like mapping between Objects.
 
 ```crystal
@@ -383,55 +573,6 @@ post.save
 post.errors[0].to_s.should eq "ERROR: name cannot be null"
 ```
 
-### Callbacks
-
-There is support for callbacks on certain events.
-
-Here is an example:
-
-```crystal
-require "granite_orm/adapter/pg"
-
-class Post < Granite::ORM
-  adapter pg
-
-  before_save :upcase_title
-
-  field title : String
-  field content : String
-  timestamps
-
-  def upcase_title
-    if title = @title
-      @title = title.upcase
-    end
-  end
-end
-```
-
-You can register callbacks for the following events:
-
-#### Create
-
-- before_save
-- before_create
-- **save**
-- after_create
-- after_save
-
-#### Update
-
-- before_save
-- before_update
-- **save**
-- after_update
-- after_save
-
-#### Destroy
-
-- before_destroy
-- **destroy**
-- after_destroy
 
 ## Contributing
 
