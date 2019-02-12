@@ -1,9 +1,10 @@
-name: granite_orm
+name: sandstone
 version: 0.8.4
 
 authors:
   - drujensen <drujensen@gmail.com>
   - elorest <isaac@isaacsloan.com>
+  - masukomi <masukomi@masukomi.org>
 
 license: MIT
 
@@ -13,14 +14,6 @@ dependencies:
     version: ~> 0.5.0
 
 development_dependencies:
-  mysql:
-    github: crystal-lang/crystal-mysql
-    version: ~> 0.4.0
-
   sqlite3:
     github: crystal-lang/crystal-sqlite3
     version: ~> 0.9.0
-
-  pg:
-    github: will/crystal-pg
-    version: ~> 0.14.1
