@@ -28,9 +28,9 @@ module Granite::ORM::Transactions
           @updated_at = Time.now.to_utc.to_s(SQLite3::DATE_FORMAT)
           {% end %}
           {% if primary_type.id == "Int32" %}
-            @{{primary_name}} = @@adapter.insert(@@table_name, self.class.fields, params, true).to_i32
+            @{{primary_name}} = @@adapter.insert(@@table_name, self.class.fields, params).to_i32
           {% else %}
-            @{{primary_name}} = @@adapter.insert(@@table_name, self.class.fields, params, true)
+            @{{primary_name}} = @@adapter.insert(@@table_name, self.class.fields, params)
           {% end %}
           __run_after_create
         end
