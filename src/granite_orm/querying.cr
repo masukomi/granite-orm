@@ -50,6 +50,22 @@ module Granite::ORM::Querying
     all([clause.strip, "LIMIT 1"].join(" "), params).first?
   end
 
+  def find_collection(values)
+    return find_collection_by(@@primary_name, values)
+  end
+  def find_collection_by(field : Symbol, values)
+    return find_collection_by(field.to_s, values)
+  end
+  def find_collection_by(field : String, values)
+    rows = [] of self
+    clause = "WHERE #{@@primary_name} in (#{prep_array_for_sql(values)})"
+    @@adapter.select(@@table_name, fields([@@primary_name]), clause ) do |results|
+      results.each do
+        rows << from_sql(results)
+      end
+    end
+    return rows
+  end
   # find returns the row with the primary key specified.
   # it checks by primary by default, but one can pass
   # another field for comparison
