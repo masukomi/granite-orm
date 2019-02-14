@@ -106,6 +106,8 @@ module Granite::ORM::Associations
       # find existing relations
       query = "WHERE #{@@foreign_key} = ?"
       current_joins = {{through}}.all(query, self.id)
+      # e.g. "select all kids joiner where parent_id = #{self.id}" 
+      # -> join table entries
 
       kids_foreign_key = {{children_class_name}}.foreign_key
       # TODO: figure out how to wrap this in a transaction
@@ -119,30 +121,52 @@ module Granite::ORM::Associations
         "and #{@@foreign_key} = ?"
 
       saveable_joins = new_children.size > 0 ? {{through}}.all(query, [self.id]) : Array({{through}}).new
+      # e.g. select all kids joiner where
+      # kid_id in (ids_of_new_kids)
+      # and parent_id = #{self.id}
 
       the_doomed_joins = current_joins - saveable_joins
       the_doomed_joins.each do |walking_dead|
-        walking_dead.destroy
+        walking_dead.destroy # because we don't want to loose 
+                             # the before_destroy and after_destroy callbacks
       end
 
       kids_after_aforementioned_massacre = {{children_class_name.id.underscore}}s
-      kids_needing_a_join = new_children - kids_after_aforementioned_massacre
-      if kids_needing_a_join.size > 0
-        # have to do this in SQL not methods, because again,
-        # we still don't know the foreign key of the kid until runtime
-        # but this'll be more efficient anyway
+      # kids_needing_a_join = new_children - kids_after_aforementioned_massacre
+      # if kids_needing_a_join.size > 0
+      # # the subtraction line raised a bug in the crystal 0.27.0 compiler
+      # # https://github.com/crystal-lang/crystal/issues/7430
+      #   # have to do this in SQL not methods, because again,
+      #   # we still don't know the foreign key of the kid until runtime
+      #   # but this'll be more efficient anyway
+      #   insert_statement = String.build do |str|
+      #     str << "insert into #{through_table} (#{@@foreign_key}, #{kids_foreign_key}) VALUES "
+      #     kids_needing_a_join.each_index do | idx |
+      #       kid = kids_needing_a_join[idx]
+      #       if idx > 0
+      #         str << ", "
+      #       end
+      #       str << "(#{self.id}, #{kid.id})"
+      #     end
+      #   end
+      #   {{through}}.exec(insert_statement)
+      # end
+
+      child_ids_needing_join = new_children.map{|c| c.id} - kids_after_aforementioned_massacre.map{|c| c.id}
+      if child_ids_needing_join.size > 0
         insert_statement = String.build do |str|
           str << "insert into #{through_table} (#{@@foreign_key}, #{kids_foreign_key}) VALUES "
-          kids_needing_a_join.each_index do | idx |
-            kid = kids_needing_a_join[idx]
+          child_ids_needing_join.each_index do | idx |
+            child_id = child_ids_needing_join[idx]
             if idx > 0
               str << ", "
             end
-            str << "(#{self.id}, #{kid.id})"
+            str << "(#{self.id}, #{child_id})"
           end
         end
         {{through}}.exec(insert_statement)
       end
+
       #END bit that should be in a transaction
 
     end
