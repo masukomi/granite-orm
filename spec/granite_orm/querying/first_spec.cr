@@ -1,6 +1,6 @@
 require "../../spec_helper"
 
-{% for adapter in GraniteExample::ADAPTERS %}
+{% for adapter in SandstoneExample::ADAPTERS %}
   {% model_constant = "Parent#{adapter.camelcase.id}".id %}
 
   describe "{{ adapter.id }} #first" do

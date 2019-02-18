@@ -1,4 +1,4 @@
-module Granite::ORM::Table
+module Sandstone::ORM::Table
   macro included
     macro inherited
       SETTINGS = {} of Nil => Nil
@@ -9,7 +9,7 @@ module Granite::ORM::Table
   # specify the database adapter you will be using for this model.
   # mysql, pg, sqlite, etc.
   macro adapter(name)
-    @@adapter = Granite::Adapter::{{name.id.capitalize}}.new("{{name.id}}")
+    @@adapter = Sandstone::Adapter::{{name.id.capitalize}}.new("{{name.id}}")
 
     def self.adapter
       @@adapter

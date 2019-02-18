@@ -1,4 +1,4 @@
-{% for adapter in GraniteExample::ADAPTERS %}
+{% for adapter in SandstoneExample::ADAPTERS %}
   {% model_constant = "Review#{adapter.camelcase.id}".id %}
   {% empty_model_constant = "Empty#{adapter.camelcase.id}".id %}
 

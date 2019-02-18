@@ -1,11 +1,11 @@
 require "../spec_helper"
 
-describe Granite::Adapter::Base do
+describe Sandstone::Adapter::Base do
   describe "#env" do
     context "no ${} exists" do
       it "should return itself" do
         url = "dummy://user:pswd@host:3333/database"
-        Granite::Adapter::Base.env(url).should eq url
+        Sandstone::Adapter::Base.env(url).should eq url
       end
     end
 
@@ -13,7 +13,7 @@ describe Granite::Adapter::Base do
       it "should replace it with environment variable" do
         ENV["DATABASE"] = "test"
         url = "dummy://user:pswd@host:3333/${DATABASE}"
-        Granite::Adapter::Base.env(url).should eq "dummy://user:pswd@host:3333/test"
+        Sandstone::Adapter::Base.env(url).should eq "dummy://user:pswd@host:3333/test"
       end
     end
 
@@ -25,7 +25,7 @@ describe Granite::Adapter::Base do
         ENV["PORT"] = "3333"
         ENV["DATABASE"] = "test"
         url = "dummy://${USER}:${PSWD}@${HOST}:${PORT}/${DATABASE}"
-        Granite::Adapter::Base.env(url).should eq "dummy://user:pswd@host:3333/test"
+        Sandstone::Adapter::Base.env(url).should eq "dummy://user:pswd@host:3333/test"
       end
     end
   end

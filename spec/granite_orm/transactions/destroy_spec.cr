@@ -1,6 +1,6 @@
 require "../../spec_helper"
 
-{% for adapter in GraniteExample::ADAPTERS %}
+{% for adapter in SandstoneExample::ADAPTERS %}
   {%
     parent_constant = "Parent#{adapter.camelcase.id}".id
     school_constant = "School#{adapter.camelcase.id}".id

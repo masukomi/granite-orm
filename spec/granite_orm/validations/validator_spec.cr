@@ -1,6 +1,6 @@
 require "../../spec_helper"
 
-class NameTest < Granite::ORM::Base
+class NameTest < Sandstone::ORM::Base
   adapter pg
   field name : String
 
@@ -9,7 +9,7 @@ class NameTest < Granite::ORM::Base
   end
 end
 
-class EmailTest < Granite::ORM::Base
+class EmailTest < Sandstone::ORM::Base
   adapter pg
   field email : String
 
@@ -18,7 +18,7 @@ class EmailTest < Granite::ORM::Base
   end
 end
 
-class PasswordTest < Granite::ORM::Base
+class PasswordTest < Sandstone::ORM::Base
   adapter pg
   field password : String
   field password_validation : String
@@ -28,7 +28,7 @@ class PasswordTest < Granite::ORM::Base
   end
 end
 
-describe Granite::ORM::Validators do
+describe Sandstone::ORM::Validators do
   describe "validates using proc" do
     it "returns true if name is set" do
       subject = NameTest.new

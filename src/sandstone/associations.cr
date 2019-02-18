@@ -1,4 +1,4 @@
-module Granite::ORM::Associations
+module Sandstone::ORM::Associations
   # define getter and setter for parent relationship
   macro belongs_to(model_name)
     field {{model_name.id}}_id : Int64

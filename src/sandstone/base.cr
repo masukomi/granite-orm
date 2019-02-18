@@ -8,8 +8,8 @@ require "./transactions"
 require "./validators"
 require "./version"
 
-# Granite::ORM::Base is the base class for your model objects.
-class Granite::ORM::Base
+# Sandstone::ORM::Base is the base class for your model objects.
+class Sandstone::ORM::Base
   include Associations
   include Callbacks
   include Fields

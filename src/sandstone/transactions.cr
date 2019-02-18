@@ -1,4 +1,4 @@
-module Granite::ORM::Transactions
+module Sandstone::ORM::Transactions
   macro __process_transactions
     {% primary_name = PRIMARY[:name] %}
     {% primary_type = PRIMARY[:type] %}
@@ -39,7 +39,7 @@ module Granite::ORM::Transactions
       rescue ex
         if message = ex.message
           puts "Save Exception: #{message}"
-          errors << Granite::ORM::Error.new(:base, message)
+          errors << Sandstone::ORM::Error.new(:base, message)
         end
         return false
       end
@@ -55,7 +55,7 @@ module Granite::ORM::Transactions
       rescue ex
         if message = ex.message
           puts "Destroy Exception: #{message}"
-          errors << Granite::ORM::Error.new(:base, message)
+          errors << Sandstone::ORM::Error.new(:base, message)
         end
         return false
       end

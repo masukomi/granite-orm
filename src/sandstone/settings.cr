@@ -1,12 +1,12 @@
 require "logger"
-module Granite::ORM
+module Sandstone::ORM
   class Settings
     property database_url : String? = nil
     property logger : Logger
     def initialize
       @logger = Logger.new nil
       # @logger = Logger.new STDOUT
-      @logger.progname = "Granite"
+      @logger.progname = "Sandstone"
     end
   end
 

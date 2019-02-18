@@ -1,6 +1,6 @@
 require "./error"
 
-module Granite::ORM::Validators
+module Sandstone::ORM::Validators
   property errors = [] of Error
 
   macro included

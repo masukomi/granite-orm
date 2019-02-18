@@ -1,4 +1,4 @@
-module Granite::ORM::Querying
+module Sandstone::ORM::Querying
   macro extended
     macro __process_querying
       \{% primary_name = PRIMARY[:name] %}

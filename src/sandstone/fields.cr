@@ -1,6 +1,6 @@
 require "json"
 
-module Granite::ORM::Fields
+module Sandstone::ORM::Fields
   alias Type = JSON::Any | DB::Any
   TIME_FORMAT_REGEX = /\d{4,}-\d{2,}-\d{2,}\s\d{2,}:\d{2,}:\d{2,}/
 

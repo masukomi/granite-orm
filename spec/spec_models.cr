@@ -1,9 +1,9 @@
-class Granite::ORM::Base
+class Sandstone::ORM::Base
   def self.drop_and_create
   end
 end
 
-{% for adapter in GraniteExample::ADAPTERS %}
+{% for adapter in SandstoneExample::ADAPTERS %}
   {%
     adapter_const_suffix = adapter.camelcase.id
     adapter_suffix = "_#{adapter.id}".id
@@ -42,7 +42,7 @@ end
 
   require "../src/adapter/{{ adapter_literal }}"
 
-    class Parent{{ adapter_const_suffix }} < Granite::ORM::Base
+    class Parent{{ adapter_const_suffix }} < Sandstone::ORM::Base
       primary id : Int64
       adapter {{ adapter_literal }}
       table_name "{{ parent_table }}"
@@ -68,7 +68,7 @@ end
       end
     end
 
-    class Teacher{{ adapter_const_suffix }} < Granite::ORM::Base
+    class Teacher{{ adapter_const_suffix }} < Sandstone::ORM::Base
       primary id : Int64
       adapter {{ adapter_literal }}
       table_name "{{ teacher_table }}"
@@ -87,7 +87,7 @@ end
       end
     end
 
-    class Student{{ adapter_const_suffix }} < Granite::ORM::Base
+    class Student{{ adapter_const_suffix }} < Sandstone::ORM::Base
       primary id : Int64
       adapter {{ adapter_literal }}
       table_name "{{ student_table }}"
@@ -108,7 +108,7 @@ end
       end
     end
 
-    class Klass{{ adapter_const_suffix }} < Granite::ORM::Base
+    class Klass{{ adapter_const_suffix }} < Sandstone::ORM::Base
       primary id : Int64
       adapter {{ adapter_literal }}
       table_name "{{ klass_table }}"
@@ -131,7 +131,7 @@ end
       end
     end
 
-    class Enrollment{{ adapter_const_suffix }} < Granite::ORM::Base
+    class Enrollment{{ adapter_const_suffix }} < Sandstone::ORM::Base
       primary id : Int64
       adapter {{ adapter_literal }}
       table_name "{{ enrollment_table }}"
@@ -151,7 +151,7 @@ end
       end
     end
 
-    class School{{ adapter_const_suffix }} < Granite::ORM::Base
+    class School{{ adapter_const_suffix }} < Sandstone::ORM::Base
       adapter {{ adapter_literal }}
       primary custom_id : Int64
       field name : String
@@ -169,7 +169,7 @@ end
       end
     end
 
-    class Nation::County{{ adapter_const_suffix }} < Granite::ORM::Base
+    class Nation::County{{ adapter_const_suffix }} < Sandstone::ORM::Base
       adapter {{ adapter_literal }}
       primary id : Int64
       table_name "{{ nation_county_table }}"
@@ -187,7 +187,7 @@ end
       end
     end
 
-    class Review{{ adapter_const_suffix }} < Granite::ORM::Base
+    class Review{{ adapter_const_suffix }} < Sandstone::ORM::Base
       adapter {{ adapter_literal }}
       table_name "{{ review_table }}"
       field name : String
@@ -215,7 +215,7 @@ end
       end
     end
 
-    class Empty{{ adapter_const_suffix }} < Granite::ORM::Base
+    class Empty{{ adapter_const_suffix }} < Sandstone::ORM::Base
       adapter {{ adapter_literal }}
       table_name "{{ empty_table }}"
       primary id : Int64
@@ -230,7 +230,7 @@ end
       end
     end
 
-    module GraniteExample
+    module SandstoneExample
       @@model_classes << Parent{{ adapter_const_suffix }}
       @@model_classes << Teacher{{ adapter_const_suffix }}
       @@model_classes << Student{{ adapter_const_suffix }}

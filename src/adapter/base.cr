@@ -1,14 +1,14 @@
-require "../granite_orm"
+require "../sandstone"
 require "db"
 
 # The Base Adapter specifies the interface that will be used by the model
 # objects to perform actions against a specific database.  Each adapter needs
 # to implement these methods.
-abstract class Granite::Adapter::Base
+abstract class Sandstone::Adapter::Base
   property database : DB::Database
 
   def initialize(adapter : String)
-    if url = ENV["DATABASE_URL"]? || Granite::ORM.settings.database_url || replace_env_vars(settings(adapter)["database"].to_s)
+    if url = ENV["DATABASE_URL"]? || Sandstone::ORM.settings.database_url || replace_env_vars(settings(adapter)["database"].to_s)
       @database = DB.open(url)
     else
       raise "database url needs to be set in the config/database.yml or DATABASE_URL environment variable"
@@ -32,7 +32,7 @@ abstract class Granite::Adapter::Base
   end
 
   def log(query : String, params = [] of String) : Nil
-    Granite::ORM.settings.logger.info "#{query}: #{params}"
+    Sandstone::ORM.settings.logger.info "#{query}: #{params}"
   end
 
   # remove all rows from a table and reset the counter on the id.
@@ -57,7 +57,7 @@ abstract class Granite::Adapter::Base
 
   # method used to replace the environment variable if exists
   private def replace_env_vars(url)
-    Granite::Adapter::Base.env(url)
+    Sandstone::Adapter::Base.env(url)
   end
 
   # class level method so we can test it

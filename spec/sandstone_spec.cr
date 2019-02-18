@@ -1,14 +1,14 @@
 require "./spec_helper"
 require "../src/adapter/pg"
 
-class Todo < Granite::ORM::Base
+class Todo < Sandstone::ORM::Base
   adapter pg
   field name : String
   field priority : Int32
   timestamps
 end
 
-class Review < Granite::ORM::Base
+class Review < Sandstone::ORM::Base
   adapter pg
   field name : String
   field user_id : Int32
@@ -19,7 +19,7 @@ class Review < Granite::ORM::Base
   field created_at : Time
 end
 
-class WebSite < Granite::ORM::Base
+class WebSite < Sandstone::ORM::Base
   adapter pg
   primary custom_id : Int32
   field name : String
@@ -29,7 +29,7 @@ class WebSite < Granite::ORM::Base
   end
 end
 
-describe Granite::ORM::Base do
+describe Sandstone::ORM::Base do
   it "should create a new todo object with name set" do
     t = Todo.new(name: "Elorest")
     t.name.should eq "Elorest"

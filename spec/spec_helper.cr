@@ -1,8 +1,8 @@
 require "spec"
 
-module GraniteExample
+module SandstoneExample
   ADAPTERS = ["pg","mysql","sqlite"]
-  @@model_classes = [] of Granite::ORM::Base.class
+  @@model_classes = [] of Sandstone::ORM::Base.class
 
   extend self
 
@@ -11,11 +11,11 @@ module GraniteExample
   end
 end
 
-require "../src/granite_orm"
+require "../src/sandstone"
 require "./spec_models"
 
-Granite::ORM.settings.logger = ::Logger.new(nil)
+Sandstone::ORM.settings.logger = ::Logger.new(nil)
 
-GraniteExample.model_classes.each do |model|
+SandstoneExample.model_classes.each do |model|
   model.drop_and_create
 end

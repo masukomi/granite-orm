@@ -1,15 +1,15 @@
 # Sandstone
 
-A simple Object Relational Model (ORM) for Crystal based on a fork of Granite
+A simple Object Relational Model (ORM) for Crystal based on a fork of Sandstone
 ORM. This fork includes specific changes for SQLite more flexible "has many through"
 relationships, custom column names for foreign keys and more. 
 
 This assumes familiarity with a Rails-style ORM. 
 
-It is a personal fork created to address limitations found in Granite. I'm happy
+It is a personal fork created to address limitations found in Sandstone. I'm happy
 to help with questions and feauters, but it is not even remotely recommended 
 for production use. I haven't even gotten around to replacing all the mentions
-of Granite.
+of Sandstone.
 
 ## Installation
 
@@ -20,7 +20,7 @@ with kemal or any other framework as well.
 
 ```yaml
 dependencies:
-  granite_orm:
+  sandstone:
     github: masukomi/sandstone
 
   sqlite3:
@@ -40,12 +40,12 @@ Or you can set the `DATABASE_URL` environment variable.  This will override the 
 
 ## Usage
 
-Here is an example using Granite ORM Model
+Here is an example using Sandstone ORM Model
 
 ```crystal
-require "granite_orm/adapter/mysql"
+require "sandstone/adapter/mysql"
 
-class Post < Granite::ORM::Base
+class Post < Sandstone::ORM::Base
   adapter mysql
   field name : String
   field body : String
@@ -57,9 +57,9 @@ end
 You can disable the timestamps for SqlLite since TIMESTAMP is not supported for this database:
 
 ```crystal
-require "granite_orm/adapter/sqlite"
+require "sandstone/adapter/sqlite"
 
-class Comment < Granite::ORM::Base
+class Comment < Sandstone::ORM::Base
   adapter sqlite
   no_timestamps  # you'll have to manage timestamp columns yourself currently
   table_name post_comments
@@ -76,7 +76,7 @@ For legacy database mappings, you may already have a table and the primary key i
 We have a macro called `primary` to help you out:
 
 ```crystal
-class Site < Granite::ORM::Base
+class Site < Sandstone::ORM::Base
   adapter mysql
   primary custom_id : Int32
   field name : String
@@ -194,7 +194,7 @@ Creates a bunch of people using the names in the array.
 
 ```crystal
 post = Post.new
-post.name = "Granite ORM Rocks!"
+post.name = "Sandstone ORM Rocks!"
 post.body = "Check this out."
 post.save
 ```
@@ -203,7 +203,7 @@ post.save
 
 ```crystal
 post = Post.find 1
-post.name = "Granite Really Rocks!"
+post.name = "Sandstone Really Rocks!"
 post.save
 ```
 
@@ -274,7 +274,7 @@ post = Post.all("ORDER BY posts.name DESC LIMIT 1").first
 
 
 ```crystal
-class User < Granite::ORM::Base
+class User < Sandstone::ORM::Base
   adapter mysql
 
   has_some Post
@@ -288,7 +288,7 @@ end
 This will add a `posts` instance method to the user which returns an array of posts.
 
 ```crystal
-class Post < Granite::ORM::Base
+class Post < Sandstone::ORM::Base
   adapter mysql
 
   owned_by User 
@@ -325,23 +325,23 @@ end
 
 #### Many to Many
 
-Instead of using a hidden many-to-many table, Granite recommends always creating a model for your join tables.  For example, let's say you have many `users` that belong to many `rooms`. We recommend adding a new model called `participants` to represent the many-to-many relationship.
+Instead of using a hidden many-to-many table, Sandstone recommends always creating a model for your join tables.  For example, let's say you have many `users` that belong to many `rooms`. We recommend adding a new model called `participants` to represent the many-to-many relationship.
 
 Then you can use the `belongs_to` and `has_many` relationships going both ways.
 
 ```crystal
-class User < Granite::ORM::Base
+class User < Sandstone::ORM::Base
   has_many :participants
 
   field name : String
 end
 
-class Participant < Granite::ORM::Base
+class Participant < Sandstone::ORM::Base
   belongs_to :user
   belongs_to :room
 end
 
-class Room < Granite::ORM::Base
+class Room < Sandstone::ORM::Base
   has_many :participants
 
   field name : String
@@ -356,9 +356,9 @@ There is support for callbacks on certain events.
 Here is an example:
 
 ```crystal
-require "granite_orm/adapter/pg"
+require "sandstone/adapter/pg"
 
-class Post < Granite::ORM
+class Post < Sandstone::ORM
   adapter pg
 
   before_save :upcase_title
@@ -414,7 +414,7 @@ You can register callbacks for the following events:
 
 -------
 
-## DEPRECATED original Granite ORM functionality
+## DEPRECATED original Sandstone ORM functionality
 Warning: This code is still present in the codebase only because it hasn't
 been deleted yet. It probably still works.... probably.
 
@@ -423,7 +423,7 @@ been deleted yet. It probably still works.... probably.
 `belongs_to` and `has_many` macros provide a rails like mapping between Objects.
 
 ```crystal
-class User < Granite::ORM::Base
+class User < Sandstone::ORM::Base
   adapter mysql
 
   has_many :posts
@@ -437,7 +437,7 @@ end
 This will add a `posts` instance method to the user which returns an array of posts.
 
 ```crystal
-class Post < Granite::ORM::Base
+class Post < Sandstone::ORM::Base
   adapter mysql
 
   belongs_to :user
@@ -480,23 +480,23 @@ CREATE INDEX 'user_id_idx' ON posts (user_id);
 
 #### Many to Many
 
-Instead of using a hidden many-to-many table, Granite recommends always creating a model for your join tables.  For example, let's say you have many `users` that belong to many `rooms`. We recommend adding a new model called `participants` to represent the many-to-many relationship.
+Instead of using a hidden many-to-many table, Sandstone recommends always creating a model for your join tables.  For example, let's say you have many `users` that belong to many `rooms`. We recommend adding a new model called `participants` to represent the many-to-many relationship.
 
 Then you can use the `belongs_to` and `has_many` relationships going both ways.
 
 ```crystal
-class User < Granite::ORM::Base
+class User < Sandstone::ORM::Base
   has_many :participants
 
   field name : String
 end
 
-class Participant < Granite::ORM::Base
+class Participant < Sandstone::ORM::Base
   belongs_to :user
   belongs_to :room
 end
 
-class Room < Granite::ORM::Base
+class Room < Sandstone::ORM::Base
   has_many :participants
 
   field name : String
@@ -525,19 +525,19 @@ CREATE INDEX 'room_id_idx' ON TABLE participants (room_id);
 As a convenience, we provide a `through:` clause to simplify accessing the many-to-many relationship:
 
 ```crystal
-class User < Granite::ORM::Base
+class User < Sandstone::ORM::Base
   has_many :participants
   has_many :rooms, through: participants
 
   field name : String
 end
 
-class Participant < Granite::ORM::Base
+class Participant < Sandstone::ORM::Base
   belongs_to :user
   belongs_to :room
 end
 
-class Room < Granite::ORM::Base
+class Room < Sandstone::ORM::Base
   has_many :participants
   has_many :users, through: participants
 
@@ -565,7 +565,7 @@ end
 
 ### Errors
 
-All database errors are added to the `errors` array used by Granite::ORM::Validators with the symbol ':base'
+All database errors are added to the `errors` array used by Sandstone::ORM::Validators with the symbol ':base'
 
 ```crystal
 post = Post.new
@@ -584,7 +584,7 @@ post.errors[0].to_s.should eq "ERROR: name cannot be null"
 
 ## Running tests
 
-Granite ORM uses Crystal's built in test framework. The tests can be run with `$ crystal spec`.
+Sandstone ORM uses Crystal's built in test framework. The tests can be run with `$ crystal spec`.
 
 The test suite depends on access to a PostgreSQL, MySQL, and SQLite database to ensure the adapters work as intended.
 

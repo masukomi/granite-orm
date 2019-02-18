@@ -2,7 +2,7 @@ require "./base"
 require "sqlite3"
 
 # Sqlite implementation of the Adapter
-class Granite::Adapter::Sqlite < Granite::Adapter::Base
+class Sandstone::Adapter::Sqlite < Sandstone::Adapter::Base
   # remove all rows from a table and reset the counter on the id.
   def clear(table_name)
     statement = "DELETE FROM #{table_name}"
