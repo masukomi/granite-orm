@@ -18,11 +18,17 @@ your `shard.yml`.  This can be used with any framework but was originally
 designed to work with the amber framework in mind.  This library will work
 with kemal or any other framework as well.
 
+WARNING: Shards 0.8.1 (2019-02-05) (distributed with crystal 0.27.0) has a bug
+in it, that makes it not capable of installing this shard normally. You'll have
+to download it and require it using a local path.
+
 ```yaml
 dependencies:
   sandstone:
-    github: masukomi/sandstone
-
+    # commented out version that doesn't work with current shards bug.
+    #github: masukomi/sandstone
+    #version: 0.8.4-sandstone
+    path: ~/path/to/where/you/cloned/sandstone
   sqlite3:
     github: crystal-lang/crystal-sqlite3
 
